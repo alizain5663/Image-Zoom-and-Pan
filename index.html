@@ -1,5 +1,3 @@
-
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -10,7 +8,16 @@
 </head>
 <body>
   <div id="zoom-container">
-    <img ondragstart="return false" id="zoom-img" src="map.jpg" />
+    <img ondragstart="return false" id="zoom-img" 
+      src="map.jpg" 
+      srcset="map.jpg 600w, 
+      map.jpg 1200w, 
+      map.jpg 2400w, 
+      map.jpg 3840w" 
+      sizes="(max-width: 600px) 100vw, 
+      (max-width: 1200px) 50vw, 
+      (max-width: 2400px) 33vw, 
+       25vw" />
   </div>
   <script src="script.js"></script>
 </body>
