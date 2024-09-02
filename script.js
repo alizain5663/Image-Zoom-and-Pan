@@ -8,31 +8,39 @@ var zoomer = (function () {
     orig_height = document.getElementById('zoom-img').getBoundingClientRect().height,
     current_top = 0,
     current_left = 0,
-    zoom_factor = 1.5;
+    zoom_factor = 1.2,
+    min_zoom = 1.0,
+    max_zoom = 3.0;
 
   function getClientCoords(event) {
-    // For mouse or touch events
     if (event.touches) {
       return {
         x: event.touches[0].clientX,
-        y: event.touches[0].clientY
+        y: event.touches[0].clientY,
       };
     } else {
       return {
         x: event.clientX,
-        y: event.clientY
+        y: event.clientY,
       };
     }
+  }
+
+  function updateOriginalDimensions() {
+    // Recalculate original dimensions based on current image size
+    orig_width = document.getElementById('zoom-img').getBoundingClientRect().width;
+    orig_height = document.getElementById('zoom-img').getBoundingClientRect().height;
   }
 
   return {
     zoom: function (zoomincrement, cursorX, cursorY) {
       img_ele = document.getElementById('zoom-img');
       zoom_factor = zoom_factor + zoomincrement;
-      if (zoom_factor <= 1.0) {
-        zoom_factor = 1.0;
-        img_ele.style.top = '0px';
-        img_ele.style.left = '0px';
+      if (zoom_factor < min_zoom) {
+        zoom_factor = min_zoom;
+      }
+      if (zoom_factor > max_zoom) {
+        zoom_factor = max_zoom;
       }
 
       var pre_width = img_ele.getBoundingClientRect().width,
@@ -45,8 +53,8 @@ var zoomer = (function () {
       var delta_height = new_height - pre_height;
 
       var rect = img_ele.getBoundingClientRect();
-      var offsetX = (cursorX - rect.left) / pre_width; // Percentage of image width where cursor is
-      var offsetY = (cursorY - rect.top) / pre_height; // Percentage of image height where cursor is
+      var offsetX = (cursorX - rect.left) / pre_width;
+      var offsetY = (cursorY - rect.top) / pre_height;
 
       current_left -= delta_width * offsetX;
       current_top -= delta_height * offsetY;
@@ -115,6 +123,22 @@ var zoomer = (function () {
       const zoom_increment = event.deltaY < 0 ? 0.1 : -0.1;
       this.zoom(zoom_increment, event.clientX, event.clientY);
     },
+
+    resize: function () {
+      updateOriginalDimensions();
+      // Reset top and left to 0 on resizing
+      current_left = 0;
+      current_top = 0;
+
+      var img_ele = document.getElementById('zoom-img');
+      var new_width = orig_width * zoom_factor;
+      var new_height = orig_height * zoom_factor;
+
+      img_ele.style.left = '0px';
+      img_ele.style.top = '0px';
+      img_ele.style.width = orig_width ;
+      img_ele.style.height = orig_height;
+    },
   };
 })();
 
@@ -131,3 +155,8 @@ document.getElementById('zoom-img').addEventListener('touchstart', zoomer.start_
 document.getElementById('zoom-container').addEventListener('touchmove', zoomer.while_drag);
 document.getElementById('zoom-container').addEventListener('touchend', zoomer.stop_drag);
 document.getElementById('zoom-container').addEventListener('touchcancel', zoomer.stop_drag);
+
+// Adjust the image on window resize
+window.addEventListener('resize', function () {
+  zoomer.resize();
+});
